@@ -2,256 +2,281 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Tilki Kura Sistemi 🦊</title>
+<title>Online Çekiliş</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
+*{box-sizing:border-box}
 body{
   margin:0;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:white;
-  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#fff;
   overflow:hidden;
 }
 
+/* ---------------- TİLKİ ARKA PLAN ---------------- */
+.fox-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+.fox{
+  position:absolute;
+  font-size:60px;
+  opacity:0.9;
+  animation:floatFox 18s linear infinite;
+}
+@keyframes floatFox{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-30px)}
+  100%{transform:translateY(0)}
+}
+
+/* ---------------- SAYFALAR ---------------- */
 .page{
+  position:absolute;
+  inset:0;
   display:none;
-  padding:30px;
-  height:100vh;
+  z-index:2;
+}
+.page.active{display:block}
+
+/* ---------------- ANA SAYFA ---------------- */
+#mainPage{
+  padding:20px;
 }
 
-.page.active{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-
-/* ---------- ANA SAYFA ---------- */
 h1{
+  text-align:center;
+  margin:10px 0 20px;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  justify-content:center;
   margin-bottom:15px;
 }
-
-textarea{
-  width:320px;
-  height:180px;
-  resize:none;
+input{
   padding:10px;
   font-size:16px;
-  border-radius:8px;
-  border:none;
 }
-
 button{
-  margin-top:15px;
-  padding:12px 25px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
+  padding:10px 16px;
+  font-size:16px;
   cursor:pointer;
-  background:#2ecc71;
-  color:black;
-  font-weight:bold;
 }
 
-button:hover{
-  background:#27ae60;
+#playersWrapper{
+  position:absolute;
+  top:150px;
+  bottom:20px;
+  left:60px;
+  right:20px;
+  overflow:hidden;
 }
 
-.names{
-  margin-top:20px;
+#players{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
-  gap:10px;
-  width:80%;
+  grid-auto-flow:column;
+  grid-template-rows:repeat(20, auto);
+  gap:6px 12px;
 }
 
-.name-box{
-  background:#2ecc71;
-  color:black;
-  padding:8px;
+.player{
+  background:#1ecf6a;
+  color:#000;
+  padding:6px 10px;
   border-radius:6px;
-  text-align:center;
   font-weight:bold;
+  white-space:nowrap;
 }
 
-/* ---------- ÇEKİLİŞ EKRANI ---------- */
-#drawBox{
+/* ---------------- ÇEKİLİŞ EKRANI ---------------- */
+#drawOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,0.95);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:5;
+}
+#rollingName{
   font-size:40px;
-  margin:20px 0;
-  min-height:60px;
+  margin-bottom:20px;
 }
-
 #countdown{
   font-size:80px;
   font-weight:bold;
 }
 
-/* ---------- WINNER ---------- */
-#winnerName{
-  font-size:80px;
-  font-weight:bold;
+/* ---------------- WINNER SAYFASI ---------------- */
+#winnerPage{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
   text-align:center;
-  margin:20px 0;
 }
 
-.fox{
+#winnerName{
+  font-size:90px;
+  font-weight:bold;
+  margin:20px 0;
+}
+.foxBig{
   font-size:90px;
 }
 
-/* ---------- KONFETİ ---------- */
-canvas{
+.winnerBtns{
+  margin-top:20px;
+  display:flex;
+  gap:10px;
+}
+
+/* ---------------- KONFET ---------------- */
+.confetti{
   position:fixed;
-  top:0;
-  left:0;
-  pointer-events:none;
+  width:10px;
+  height:10px;
+  animation:fall 4s linear infinite;
+}
+@keyframes fall{
+  from{transform:translateY(0)}
+  to{transform:translateY(100vh)}
 }
 </style>
 </head>
-
 <body>
 
-<canvas id="confetti"></canvas>
+<!-- TİLKİ ARKA PLAN -->
+<div class="fox-bg" id="foxBg"></div>
 
-<!-- ===== ANA SAYFA ===== -->
-<div class="page active" id="home">
-  <h1>🦊 Tilki Kura Sistemi</h1>
-  <p>Her satıra bir isim yaz</p>
+<!-- ANA SAYFA -->
+<div class="page active" id="mainPage">
+  <h1>🦊 Online Çekiliş</h1>
 
-  <textarea id="nameInput" placeholder="Ahmet
-Mehmet
-Ayşe"></textarea>
+  <div class="controls">
+    <input id="playerInput" placeholder="Oyuncu adı">
+    <button onclick="addPlayer()">Oyuncu ekle</button>
+    <button onclick="startDraw()">🎰 Çekiliş yap</button>
+  </div>
 
-  <button onclick="updateList()">İsimleri Güncelle</button>
-  <button onclick="startDraw()">🎉 Çekiliş Yap</button>
-
-  <div class="names" id="nameList"></div>
+  <div id="playersWrapper">
+    <div id="players"></div>
+  </div>
 </div>
 
-<!-- ===== ÇEKİLİŞ ===== -->
-<div class="page" id="draw">
-  <h1>🎲 Çekiliş Yapılıyor</h1>
+<!-- ÇEKİLİŞ OVERLAY -->
+<div id="drawOverlay">
+  <div id="rollingName">Hazırlanıyor...</div>
   <div id="countdown"></div>
-  <div id="drawBox"></div>
 </div>
 
-<!-- ===== WINNER ===== -->
-<div class="page" id="winner">
-  <h1>KAZANAN</h1>
-  <div class="fox">🦊</div>
+<!-- WINNER SAYFASI -->
+<div class="page" id="winnerPage">
+  <div class="foxBig">🦊</div>
   <div id="winnerName"></div>
-  <div class="fox">🦊</div>
+  <div class="foxBig">🦊</div>
 
-  <button onclick="goHome()">⬅ Ana Sayfaya Dön</button>
+  <div class="winnerBtns">
+    <button onclick="backToMain()">⬅ Ana sayfa</button>
+    <button onclick="startDraw()">🔁 Yeniden kura çek</button>
+  </div>
 </div>
 
 <script>
-let names = [];
-let canvas = document.getElementById("confetti");
-let ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+/* -------- AYAR -------- */
+const FIXED_WINNER = "ERDEM"; // HER ZAMAN KAZANACAK İSİM
 
-function showPage(id){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+const players=[];
+const playersDiv=document.getElementById("players");
+const input=document.getElementById("playerInput");
+
+/* Enter ile ekleme */
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter") addPlayer();
+});
+
+function addPlayer(){
+  const name=input.value.trim();
+  if(!name) return;
+  players.push(name);
+  const div=document.createElement("div");
+  div.className="player";
+  div.textContent=name;
+  playersDiv.appendChild(div);
+  input.value="";
 }
 
-/* ---------- İSİM LİSTESİ ---------- */
-function updateList(){
-  const input = document.getElementById("nameInput").value;
-  names = input.split("\n").map(n=>n.trim()).filter(n=>n);
-  const list = document.getElementById("nameList");
-  list.innerHTML="";
-  names.forEach(n=>{
-    const div = document.createElement("div");
-    div.className="name-box";
-    div.textContent=n;
-    list.appendChild(div);
-  });
-}
-
-/* ---------- ÇEKİLİŞ ---------- */
+/* -------- ÇEKİLİŞ -------- */
 function startDraw(){
-  if(names.length < 2){
-    alert("En az 2 isim gir");
+  if(players.length===0) return;
+
+  document.getElementById("drawOverlay").style.display="flex";
+
+  let i=0;
+  const roll=setInterval(()=>{
+    document.getElementById("rollingName").textContent=
+      players[i%players.length];
+    i++;
+  },80);
+
+  setTimeout(()=>{
+    clearInterval(roll);
+    countdown(3);
+  },2000);
+}
+
+function countdown(n){
+  const cd=document.getElementById("countdown");
+  cd.textContent=n;
+  if(n===0){
+    showWinner();
     return;
   }
-  showPage("draw");
-  countdown(3);
+  setTimeout(()=>countdown(n-1),700);
 }
 
-function countdown(num){
-  const cd = document.getElementById("countdown");
-  const box = document.getElementById("drawBox");
-  box.textContent="";
-  if(num>0){
-    cd.textContent=num;
-    setTimeout(()=>countdown(num-1),1000);
-  }else{
-    cd.textContent="";
-    shuffleNames();
+/* -------- WINNER -------- */
+function showWinner(){
+  document.getElementById("drawOverlay").style.display="none";
+  document.getElementById("mainPage").classList.remove("active");
+  document.getElementById("winnerPage").classList.add("active");
+  document.getElementById("winnerName").textContent=FIXED_WINNER;
+  confettiBoom();
+}
+
+function backToMain(){
+  document.getElementById("winnerPage").classList.remove("active");
+  document.getElementById("mainPage").classList.add("active");
+}
+
+/* -------- KONFET -------- */
+function confettiBoom(){
+  for(let i=0;i<200;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.top="-10px";
+    c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
   }
 }
 
-function shuffleNames(){
-  let i=0;
-  const box = document.getElementById("drawBox");
-  const interval = setInterval(()=>{
-    box.textContent = names[Math.floor(Math.random()*names.length)];
-    i++;
-    if(i>25){
-      clearInterval(interval);
-      const winner = names[Math.floor(Math.random()*names.length)];
-      showWinner(winner);
-    }
-  },100);
-}
-
-/* ---------- WINNER ---------- */
-function showWinner(erdem){
-  showPage("winner");
-  document.getElementById("winnerName").textContent=name;
-  launchConfetti();
-}
-
-function goHome(){
-  showPage("home");
-}
-
-/* ---------- KONFETİ ---------- */
-let confs=[];
-function launchConfetti(){
-  confs=[];
-  for(let i=0;i<400;i++){
-    confs.push({
-      x:Math.random()<0.5?0:canvas.width,
-      y:canvas.height,
-      vx:(Math.random()*6+2)*(Math.random()<0.5?1:-1),
-      vy:-Math.random()*8-4,
-      size:Math.random()*6+4
-    });
-  }
-  animateConfetti();
-}
-
-function animateConfetti(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  confs.forEach(c=>{
-    c.x+=c.vx;
-    c.y+=c.vy;
-    c.vy+=0.15;
-    ctx.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
-    ctx.fillRect(c.x,c.y,c.size,c.size);
-  });
-  confs = confs.filter(c=>c.y<canvas.height);
-  if(confs.length>0){
-    requestAnimationFrame(animateConfetti);
-  }
+/* -------- TİLKİLER -------- */
+const foxBg=document.getElementById("foxBg");
+for(let i=0;i<10;i++){
+  const f=document.createElement("div");
+  f.className="fox";
+  f.textContent="🦊";
+  f.style.left=Math.random()*100+"%";
+  f.style.top=Math.random()*100+"%";
+  f.style.animationDelay=Math.random()*10+"s";
+  foxBg.appendChild(f);
 }
 </script>
 

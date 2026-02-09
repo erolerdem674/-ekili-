@@ -13,7 +13,7 @@ body{
   overflow:hidden;
 }
 
-/* ---------------- TİLKİ ARKA PLAN ---------------- */
+/* ================= TİLKİ ARKA PLAN ================= */
 .fox-bg{
   position:fixed;
   inset:0;
@@ -22,17 +22,17 @@ body{
 }
 .fox{
   position:absolute;
-  font-size:60px;
-  opacity:0.9;
-  animation:floatFox 18s linear infinite;
+  font-size:64px;
+  opacity:0.85;
+  animation:foxMove 20s linear infinite;
 }
-@keyframes floatFox{
+@keyframes foxMove{
   0%{transform:translateY(0)}
-  50%{transform:translateY(-30px)}
+  50%{transform:translateY(-40px)}
   100%{transform:translateY(0)}
 }
 
-/* ---------------- SAYFALAR ---------------- */
+/* ================= SAYFALAR ================= */
 .page{
   position:absolute;
   inset:0;
@@ -41,7 +41,7 @@ body{
 }
 .page.active{display:block}
 
-/* ---------------- ANA SAYFA ---------------- */
+/* ================= ANA SAYFA ================= */
 #mainPage{
   padding:20px;
 }
@@ -57,6 +57,7 @@ h1{
   justify-content:center;
   margin-bottom:15px;
 }
+
 input{
   padding:10px;
   font-size:16px;
@@ -71,7 +72,7 @@ button{
   position:absolute;
   top:150px;
   bottom:20px;
-  left:60px;
+  left:80px;
   right:20px;
   overflow:hidden;
 }
@@ -80,19 +81,18 @@ button{
   display:grid;
   grid-auto-flow:column;
   grid-template-rows:repeat(20, auto);
-  gap:6px 12px;
+  gap:6px 14px;
 }
 
 .player{
   background:#1ecf6a;
-  color:#000;
   padding:6px 10px;
   border-radius:6px;
   font-weight:bold;
   white-space:nowrap;
 }
 
-/* ---------------- ÇEKİLİŞ EKRANI ---------------- */
+/* ================= ÇEKİLİŞ OVERLAY ================= */
 #drawOverlay{
   position:fixed;
   inset:0;
@@ -103,16 +103,17 @@ button{
   flex-direction:column;
   z-index:5;
 }
+
 #rollingName{
-  font-size:40px;
+  font-size:42px;
   margin-bottom:20px;
 }
 #countdown{
-  font-size:80px;
+  font-size:90px;
   font-weight:bold;
 }
 
-/* ---------------- WINNER SAYFASI ---------------- */
+/* ================= WINNER SAYFASI ================= */
 #winnerPage{
   display:flex;
   align-items:center;
@@ -122,26 +123,27 @@ button{
 }
 
 #winnerName{
-  font-size:90px;
+  font-size:96px;
   font-weight:bold;
   margin:20px 0;
 }
+
 .foxBig{
-  font-size:90px;
+  font-size:100px;
 }
 
 .winnerBtns{
   margin-top:20px;
   display:flex;
-  gap:10px;
+  gap:12px;
 }
 
-/* ---------------- KONFET ---------------- */
+/* ================= KONFET ================= */
 .confetti{
   position:fixed;
   width:10px;
   height:10px;
-  animation:fall 4s linear infinite;
+  animation:fall 4s linear forwards;
 }
 @keyframes fall{
   from{transform:translateY(0)}
@@ -149,9 +151,10 @@ button{
 }
 </style>
 </head>
+
 <body>
 
-<!-- TİLKİ ARKA PLAN -->
+<!-- TİLKİLER -->
 <div class="fox-bg" id="foxBg"></div>
 
 <!-- ANA SAYFA -->
@@ -169,13 +172,13 @@ button{
   </div>
 </div>
 
-<!-- ÇEKİLİŞ OVERLAY -->
+<!-- ÇEKİLİŞ -->
 <div id="drawOverlay">
-  <div id="rollingName">Hazırlanıyor...</div>
+  <div id="rollingName">Hazırlanıyor…</div>
   <div id="countdown"></div>
 </div>
 
-<!-- WINNER SAYFASI -->
+<!-- WINNER -->
 <div class="page" id="winnerPage">
   <div class="foxBig">🦊</div>
   <div id="winnerName"></div>
@@ -188,14 +191,14 @@ button{
 </div>
 
 <script>
-/* -------- AYAR -------- */
-const FIXED_WINNER = "ERDEM"; // HER ZAMAN KAZANACAK İSİM
+/* ======= AYAR ======= */
+const FIXED_WINNER = "CEMAL";
 
+/* ======= OYUNCULAR ======= */
 const players=[];
 const playersDiv=document.getElementById("players");
 const input=document.getElementById("playerInput");
 
-/* Enter ile ekleme */
 input.addEventListener("keydown",e=>{
   if(e.key==="Enter") addPlayer();
 });
@@ -204,25 +207,24 @@ function addPlayer(){
   const name=input.value.trim();
   if(!name) return;
   players.push(name);
-  const div=document.createElement("div");
-  div.className="player";
-  div.textContent=name;
-  playersDiv.appendChild(div);
+  const d=document.createElement("div");
+  d.className="player";
+  d.textContent=name;
+  playersDiv.appendChild(d);
   input.value="";
 }
 
-/* -------- ÇEKİLİŞ -------- */
+/* ======= ÇEKİLİŞ ======= */
 function startDraw(){
   if(players.length===0) return;
 
   document.getElementById("drawOverlay").style.display="flex";
-
   let i=0;
   const roll=setInterval(()=>{
     document.getElementById("rollingName").textContent=
       players[i%players.length];
     i++;
-  },80);
+  },70);
 
   setTimeout(()=>{
     clearInterval(roll);
@@ -232,15 +234,12 @@ function startDraw(){
 
 function countdown(n){
   const cd=document.getElementById("countdown");
-  cd.textContent=n;
-  if(n===0){
-    showWinner();
-    return;
-  }
+  cd.textContent=n>0?n:"";
+  if(n===0){showWinner();return;}
   setTimeout(()=>countdown(n-1),700);
 }
 
-/* -------- WINNER -------- */
+/* ======= WINNER ======= */
 function showWinner(){
   document.getElementById("drawOverlay").style.display="none";
   document.getElementById("mainPage").classList.remove("active");
@@ -254,9 +253,9 @@ function backToMain(){
   document.getElementById("mainPage").classList.add("active");
 }
 
-/* -------- KONFET -------- */
+/* ======= KONFET ======= */
 function confettiBoom(){
-  for(let i=0;i<200;i++){
+  for(let i=0;i<300;i++){
     const c=document.createElement("div");
     c.className="confetti";
     c.style.left=Math.random()*100+"vw";
@@ -267,9 +266,9 @@ function confettiBoom(){
   }
 }
 
-/* -------- TİLKİLER -------- */
+/* ======= TİLKİLER ======= */
 const foxBg=document.getElementById("foxBg");
-for(let i=0;i<10;i++){
+for(let i=0;i<12;i++){
   const f=document.createElement("div");
   f.className="fox";
   f.textContent="🦊";

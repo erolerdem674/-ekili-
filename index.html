@@ -8,14 +8,15 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: white;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #ffffff;
       overflow: hidden;
     }
 
     h1 {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 25px;
+      font-weight: 600;
     }
 
     .container {
@@ -26,35 +27,46 @@
     }
 
     input {
-      padding: 10px;
-      width: 200px;
+      padding: 12px;
+      width: 220px;
       font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
 
     button {
-      padding: 10px 16px;
+      padding: 12px 18px;
       font-size: 16px;
-      margin-left: 5px;
+      margin-left: 6px;
+      border-radius: 6px;
+      border: none;
       cursor: pointer;
+      background: #2ecc71;
+      color: white;
+    }
+
+    button:last-child {
+      background: #3498db;
     }
 
     #nameList {
       margin-top: 20px;
-      font-size: 18px;
+      font-size: 17px;
+      opacity: 0.85;
     }
 
     #result {
-      margin-top: 40px;
-      font-size: 32px;
+      margin-top: 45px;
+      font-size: 34px;
       font-weight: bold;
       min-height: 40px;
     }
 
-    /* 🦊 Arka plan tilkiler */
+    /* 🦊 Tilkiler */
     .fox {
       position: absolute;
-      font-size: 32px;
-      opacity: 0.25;
+      font-size: 48px;
+      opacity: 0.22;
       user-select: none;
       z-index: 0;
     }
@@ -62,19 +74,18 @@
     /* 🎉 Konfeti */
     .confetti {
       position: fixed;
-      bottom: 0;
       width: 10px;
       height: 10px;
-      animation: pop 2s ease-out forwards;
+      animation: fly 2.5s ease-out forwards;
     }
 
-    @keyframes pop {
+    @keyframes fly {
       0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translate(0,0) rotate(0deg);
         opacity: 1;
       }
       100% {
-        transform: translateY(-300px) rotate(720deg);
+        transform: translate(var(--x), -350px) rotate(720deg);
         opacity: 0;
       }
     }
@@ -82,10 +93,10 @@
 </head>
 <body>
 
-  <h1>🎲 Online Çekiliş</h1>
+  <h1>🎲 Online Çekiliş Sistemi</h1>
 
   <div class="container">
-    <input id="nameInput" placeholder="İsim gir">
+    <input id="nameInput" placeholder="Oyuncu adı gir">
     <button onclick="addName()">Oyuncu Ekle</button>
     <button onclick="draw()">Çekiliş Yap</button>
 
@@ -95,14 +106,10 @@
 
   <script>
     const names = [];
-
     const input = document.getElementById("nameInput");
 
-    // ✅ ENTER ile ekleme
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        addName();
-      }
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") addName();
     });
 
     function addName() {
@@ -112,7 +119,7 @@
       names.push(value);
 
       const div = document.createElement("div");
-      div.textContent = value;
+      div.textContent = "• " + value;
       document.getElementById("nameList").appendChild(div);
 
       input.value = "";
@@ -131,39 +138,40 @@
         result.textContent = "🎲 " + names[Math.floor(Math.random() * names.length)];
         i++;
 
-        if (i > 20) {
+        if (i > 22) {
           clearInterval(interval);
           const winner = names[Math.floor(Math.random() * names.length)];
           result.textContent = "🏆 Kazanan: " + winner;
-          confetti();
+          confettiSide("left");
+          confettiSide("right");
         }
-      }, 100);
+      }, 90);
     }
 
-    /* 🎉 Konfeti patlaması */
-    function confetti() {
-      for (let i = 0; i < 30; i++) {
+    function confettiSide(side) {
+      for (let i = 0; i < 25; i++) {
         const c = document.createElement("div");
         c.className = "confetti";
-        c.style.left = (Math.random() * 50) + "vw";
         c.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
+        c.style.bottom = "0px";
+        c.style[side] = "0px";
+        c.style.setProperty("--x", (side === "left" ? 1 : -1) * (Math.random() * 300) + "px");
         document.body.appendChild(c);
 
-        setTimeout(() => c.remove(), 2000);
+        setTimeout(() => c.remove(), 2500);
       }
     }
 
-    /* 🦊 Arka plan tilkiler */
-    for (let i = 0; i < 8; i++) {
+    /* 🦊 Daha fazla ve büyük tilki */
+    for (let i = 0; i < 14; i++) {
       const fox = document.createElement("div");
       fox.className = "fox";
       fox.textContent = "🦊";
-      fox.style.left = Math.random() * 90 + "vw";
-      fox.style.top = Math.random() * 90 + "vh";
+      fox.style.left = Math.random() * 95 + "vw";
+      fox.style.top = Math.random() * 95 + "vh";
       document.body.appendChild(fox);
     }
   </script>
 
 </body>
 </html>
-

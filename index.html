@@ -3,198 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <title>Online Çekiliş</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: white;
-  overflow: hidden;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: white;
+    overflow: hidden;
 }
 
-h1 {
-  text-align: center;
-  margin: 20px 0;
+/* ÜST BAR */
+#topBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
 }
 
-.controls {
-  text-align: center;
-  margin-bottom: 15px;
+#topBar input {
+    padding: 8px;
+    font-size: 16px;
+    width: 200px;
 }
 
-input {
-  padding: 10px;
-  font-size: 16px;
-  width: 220px;
+#topBar button {
+    padding: 8px 14px;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
 }
 
-button {
-  padding: 10px 16px;
-  font-size: 16px;
-  margin-left: 6px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  color: white;
-}
+#addBtn { background: #2ecc71; }
+#drawBtn { background: #3498db; }
 
-.add { background: #2ecc71; }
-.draw { background: #3498db; }
-
+/* OYUNCU ALANI */
 #playersWrapper {
-  position: relative;
-  width: 100%;
-  height: 320px;
-  overflow: hidden;
-  margin-top: 10px;
+    position: absolute;
+    top: 90px;
+    left: 120px;
+    right: 40px;
+    bottom: 20px;
+    overflow: hidden;
 }
 
 #players {
-  position: absolute;
-  display: flex;
-  gap: 40px;
-  transition: transform 0.4s ease;
+    display: flex;
+    gap: 40px;
+    transition: transform 0.5s ease;
 }
 
 .column {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 160px;
-  font-size: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-#resultScreen {
-  display: none;
-  text-align: center;
-  margin-top: 80px;
-  font-size: 40px;
-  font-weight: bold;
+.player {
+    background: #e9f9ef;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 16px;
+    white-space: nowrap;
 }
 
-/* 🦊 Tilkiler */
+/* KAZANAN EKRANI */
+#winnerScreen {
+    position: fixed;
+    inset: 0;
+    background: white;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 10;
+}
+
+#winnerName {
+    font-size: 48px;
+    margin-top: 20px;
+}
+
+/* TİLKİLER */
 .fox {
-  position: absolute;
-  font-size: 64px;
-  opacity: 0.45;
-  user-select: none;
-  z-index: 0;
+    position: fixed;
+    font-size: 64px;
+    opacity: 0.35;
+    pointer-events: none;
 }
 
-/* 🎉 Konfeti */
+/* KONFETİ */
 .confetti {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  animation: confettiFly 2.5s forwards;
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: fall linear forwards;
 }
 
-@keyframes confettiFly {
-  from { transform: translate(0,0) rotate(0deg); opacity:1; }
-  to { transform: translate(var(--x), -350px) rotate(720deg); opacity:0; }
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎲 Online Çekiliş</h1>
-
-<div class="controls">
-  <input id="nameInput" placeholder="Oyuncu adı gir">
-  <button class="add" onclick="addPlayer()">Oyuncu Ekle</button>
-  <button class="draw" onclick="draw()">Çekiliş Yap</button>
+<div id="topBar">
+    🦊
+    <input id="playerInput" placeholder="Oyuncu adı gir">
+    <button id="addBtn" onclick="addPlayerBtn()">Oyuncu Ekle</button>
+    <button id="drawBtn" onclick="draw()">Çekiliş Yap</button>
 </div>
 
 <div id="playersWrapper">
-  <div id="players"></div>
+    <div id="players"></div>
 </div>
 
-<div id="resultScreen"></div>
+<div id="winnerScreen">
+    🦊🎉
+    <div id="winnerName"></div>
+</div>
 
 <script>
-const players = [];
-const playersDiv = document.getElementById("players");
-const input = document.getElementById("nameInput");
-let columns = [];
+const playersContainer = document.getElementById("players");
+const wrapper = document.getElementById("playersWrapper");
 
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") addPlayer();
+let columns = [];
+let maxPerColumn = 20;
+
+/* OYUNCU EKLE */
+function addPlayer(name) {
+    if (!name) return;
+
+    let col = columns[columns.length - 1];
+    if (!col || col.children.length >= maxPerColumn) {
+        col = document.createElement("div");
+        col.className = "column";
+        playersContainer.appendChild(col);
+        columns.push(col);
+    }
+
+    const p = document.createElement("div");
+    p.className = "player";
+    p.textContent = name;
+    col.appendChild(p);
+
+    autoScroll();
+}
+
+/* BUTON */
+function addPlayerBtn() {
+    const input = document.getElementById("playerInput");
+    addPlayer(input.value.trim());
+    input.value = "";
+}
+
+/* ENTER */
+document.getElementById("playerInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") addPlayerBtn();
 });
 
-function addPlayer() {
-  const name = input.value.trim();
-  if (!name) return;
-
-  players.push(name);
-
-  if (columns.length === 0 || columns[columns.length - 1].children.length >= 20) {
-    const col = document.createElement("div");
-    col.className = "column";
-    playersDiv.appendChild(col);
-    columns.push(col);
-  }
-
-  const item = document.createElement("div");
-  item.textContent = "• " + name;
-  columns[columns.length - 1].appendChild(item);
-
-  const maxVisibleCols = Math.floor(window.innerWidth / 200);
-  if (columns.length > maxVisibleCols) {
-    const shift = (columns.length - maxVisibleCols) * 200;
-    playersDiv.style.transform = `translateX(-${shift}px)`;
-  }
-
-  input.value = "";
-}
-
-function draw() {
-  if (players.length === 0) {
-    alert("Oyuncu yok!");
-    return;
-  }
-
-  document.getElementById("playersWrapper").style.display = "none";
-  const screen = document.getElementById("resultScreen");
-  screen.style.display = "block";
-
-  let i = 0;
-  const interval = setInterval(() => {
-    screen.textContent = "🎲 " + players[Math.floor(Math.random() * players.length)];
-    i++;
-    if (i > 25) {
-      clearInterval(interval);
-      const winner = players[Math.floor(Math.random() * players.length)];
-      screen.textContent = "🏆 Kazanan: " + winner;
-      confetti("left");
-      confetti("right");
+/* OTOMATİK KAYDIRMA */
+function autoScroll() {
+    const diff = playersContainer.scrollWidth - wrapper.clientWidth;
+    if (diff > 0) {
+        playersContainer.style.transform = `translateX(-${diff + 40}px)`;
     }
-  }, 90);
 }
 
-function confetti(side) {
-  for (let i = 0; i < 30; i++) {
-    const c = document.createElement("div");
-    c.className = "confetti";
-    c.style.background = `hsl(${Math.random()*360},100%,50%)`;
-    c.style.bottom = "0";
-    c.style[side] = "0";
-    c.style.setProperty("--x", (side==="left"?1:-1)*(Math.random()*300)+"px");
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),2500);
-  }
+/* ÇEKİLİŞ */
+function draw() {
+    if (!columns.length) return;
+
+    wrapper.style.display = "none";
+
+    const all = [];
+    columns.forEach(c => [...c.children].forEach(p => all.push(p.textContent)));
+
+    const winner = all[Math.floor(Math.random() * all.length)];
+    document.getElementById("winnerName").textContent = winner;
+    document.getElementById("winnerScreen").style.display = "flex";
+
+    confetti();
 }
 
-/* 🦊 Tilkiler */
-const foxes = ["🦊","🦊","🦊","🦊","🦊","🦊"];
+/* KONFETİ */
+function confetti() {
+    for (let i = 0; i < 120; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.background = `hsl(${Math.random()*360},100%,50%)`;
+        c.style.animationDuration = (Math.random()*2+2)+"s";
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(),4000);
+    }
+}
+
+/* TİLKİLER */
 for (let i = 0; i < 12; i++) {
-  const f = document.createElement("div");
-  f.className = "fox";
-  f.textContent = foxes[Math.floor(Math.random()*foxes.length)];
-  f.style.left = Math.random()*90+"vw";
-  f.style.top = Math.random()*90+"vh";
-  document.body.appendChild(f);
+    const f = document.createElement("div");
+    f.className = "fox";
+    f.textContent = "🦊";
+    f.style.left = Math.random()*100+"vw";
+    f.style.top = Math.random()*100+"vh";
+    document.body.appendChild(f);
 }
 </script>
 

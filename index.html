@@ -2,242 +2,258 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Online Çekiliş</title>
+<title>Tilki Kura Sistemi 🦊</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: white;
-    overflow: hidden;
+*{
+  box-sizing:border-box;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ÜST KONTROLLER */
-#topBar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    padding: 20px;
-    z-index: 5;
+body{
+  margin:0;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+  min-height:100vh;
+  overflow:hidden;
 }
 
-#topBar input {
-    padding: 10px;
-    font-size: 16px;
-    width: 220px;
+.page{
+  display:none;
+  padding:30px;
+  height:100vh;
 }
 
-#topBar button {
-    padding: 10px 18px;
-    font-size: 15px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    color: white;
+.page.active{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
 }
 
-#addBtn { background: #2ecc71; }
-#drawBtn { background: #3498db; }
-
-/* OYUNCU ALANI */
-#playersWrapper {
-    position: absolute;
-    top: 90px;
-    left: 120px;
-    right: 40px;
-    bottom: 20px;
-    overflow: hidden;
+/* ---------- ANA SAYFA ---------- */
+h1{
+  margin-bottom:15px;
 }
 
-#players {
-    display: flex;
-    gap: 40px;
-    transition: transform 0.4s ease;
+textarea{
+  width:320px;
+  height:180px;
+  resize:none;
+  padding:10px;
+  font-size:16px;
+  border-radius:8px;
+  border:none;
 }
 
-.column {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+button{
+  margin-top:15px;
+  padding:12px 25px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#2ecc71;
+  color:black;
+  font-weight:bold;
 }
 
-.player {
-    background: #e6fff0;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    white-space: nowrap;
+button:hover{
+  background:#27ae60;
 }
 
-/* TİLKİLER */
-.fox {
-    position: fixed;
-    font-size: 80px;
-    opacity: 0.45;
-    pointer-events: none;
+.names{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:10px;
+  width:80%;
 }
 
-/* KAZANAN EKRANI */
-#winnerScreen {
-    position: fixed;
-    inset: 0;
-    background: white;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 50;
+.name-box{
+  background:#2ecc71;
+  color:black;
+  padding:8px;
+  border-radius:6px;
+  text-align:center;
+  font-weight:bold;
 }
 
-#winnerBox {
-    text-align: center;
-    position: relative;
-    z-index: 60;
+/* ---------- ÇEKİLİŞ EKRANI ---------- */
+#drawBox{
+  font-size:40px;
+  margin:20px 0;
+  min-height:60px;
 }
 
-#winnerName {
-    font-size: 88px;
-    font-weight: 900;
-    margin: 30px 0;
+#countdown{
+  font-size:80px;
+  font-weight:bold;
 }
 
-#winnerBox button {
-    margin-top: 40px;
-    padding: 14px 30px;
-    font-size: 18px;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+/* ---------- WINNER ---------- */
+#winnerName{
+  font-size:80px;
+  font-weight:bold;
+  text-align:center;
+  margin:20px 0;
 }
 
-/* KONFETİ */
-.confetti {
-    position: fixed;
-    width: 14px;
-    height: 14px;
-    animation: fall linear forwards;
-    z-index: 55;
+.fox{
+  font-size:90px;
 }
 
-@keyframes fall {
-    to {
-        transform: translateY(120vh) rotate(720deg);
-    }
+/* ---------- KONFETİ ---------- */
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
 }
 </style>
 </head>
 
 <body>
 
-<div id="topBar">
-    🦊
-    <input id="playerInput" placeholder="Oyuncu adı gir">
-    <button id="addBtn">Oyuncu Ekle</button>
-    <button id="drawBtn">Çekiliş Yap</button>
+<canvas id="confetti"></canvas>
+
+<!-- ===== ANA SAYFA ===== -->
+<div class="page active" id="home">
+  <h1>🦊 Tilki Kura Sistemi</h1>
+  <p>Her satıra bir isim yaz</p>
+
+  <textarea id="nameInput" placeholder="Ahmet
+Mehmet
+Ayşe"></textarea>
+
+  <button onclick="updateList()">İsimleri Güncelle</button>
+  <button onclick="startDraw()">🎉 Çekiliş Yap</button>
+
+  <div class="names" id="nameList"></div>
 </div>
 
-<div id="playersWrapper">
-    <div id="players"></div>
+<!-- ===== ÇEKİLİŞ ===== -->
+<div class="page" id="draw">
+  <h1>🎲 Çekiliş Yapılıyor</h1>
+  <div id="countdown"></div>
+  <div id="drawBox"></div>
 </div>
 
-<div id="winnerScreen">
-    <div id="winnerBox">
-        <div style="font-size:90px">🦊</div>
-        <div id="winnerName"></div>
-        <div style="font-size:90px">🦊</div>
-        <button onclick="closeWinner()">Geri Dön</button>
-    </div>
+<!-- ===== WINNER ===== -->
+<div class="page" id="winner">
+  <h1>KAZANAN</h1>
+  <div class="fox">🦊</div>
+  <div id="winnerName"></div>
+  <div class="fox">🦊</div>
+
+  <button onclick="goHome()">⬅ Ana Sayfaya Dön</button>
 </div>
 
 <script>
-const players = document.getElementById("players");
-const wrapper = document.getElementById("playersWrapper");
-let columns = [];
-const maxPerColumn = 20;
+let names = [];
+let canvas = document.getElementById("confetti");
+let ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-/* OYUNCU EKLE */
-function addPlayer(name) {
-    if (!name) return;
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
 
-    let col = columns[columns.length - 1];
-    if (!col || col.children.length >= maxPerColumn) {
-        col = document.createElement("div");
-        col.className = "column";
-        players.appendChild(col);
-        columns.push(col);
+/* ---------- İSİM LİSTESİ ---------- */
+function updateList(){
+  const input = document.getElementById("nameInput").value;
+  names = input.split("\n").map(n=>n.trim()).filter(n=>n);
+  const list = document.getElementById("nameList");
+  list.innerHTML="";
+  names.forEach(n=>{
+    const div = document.createElement("div");
+    div.className="name-box";
+    div.textContent=n;
+    list.appendChild(div);
+  });
+}
+
+/* ---------- ÇEKİLİŞ ---------- */
+function startDraw(){
+  if(names.length < 2){
+    alert("En az 2 isim gir");
+    return;
+  }
+  showPage("draw");
+  countdown(3);
+}
+
+function countdown(num){
+  const cd = document.getElementById("countdown");
+  const box = document.getElementById("drawBox");
+  box.textContent="";
+  if(num>0){
+    cd.textContent=num;
+    setTimeout(()=>countdown(num-1),1000);
+  }else{
+    cd.textContent="";
+    shuffleNames();
+  }
+}
+
+function shuffleNames(){
+  let i=0;
+  const box = document.getElementById("drawBox");
+  const interval = setInterval(()=>{
+    box.textContent = names[Math.floor(Math.random()*names.length)];
+    i++;
+    if(i>25){
+      clearInterval(interval);
+      const winner = names[Math.floor(Math.random()*names.length)];
+      showWinner(winner);
     }
-
-    const p = document.createElement("div");
-    p.className = "player";
-    p.textContent = name;
-    col.appendChild(p);
-
-    autoScroll();
+  },100);
 }
 
-document.getElementById("addBtn").onclick = () => {
-    const i = document.getElementById("playerInput");
-    addPlayer(i.value.trim());
-    i.value = "";
-};
-
-document.getElementById("playerInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") document.getElementById("addBtn").click();
-});
-
-/* OTOMATİK KAYDIR */
-function autoScroll() {
-    const diff = players.scrollWidth - wrapper.clientWidth;
-    if (diff > 0) {
-        players.style.transform = `translateX(-${diff + 40}px)`;
-    }
+/* ---------- WINNER ---------- */
+function showWinner(name){
+  showPage("winner");
+  document.getElementById("winnerName").textContent=name;
+  launchConfetti();
 }
 
-/* ÇEKİLİŞ */
-document.getElementById("drawBtn").onclick = () => {
-    const all = [];
-    columns.forEach(c => [...c.children].forEach(p => all.push(p.textContent)));
-    if (!all.length) return;
-
-    const winner = all[Math.floor(Math.random() * all.length)];
-    document.getElementById("winnerName").textContent = winner;
-
-    document.getElementById("winnerScreen").style.display = "flex";
-    startConfetti();
-};
-
-/* GERİ DÖN */
-function closeWinner() {
-    document.getElementById("winnerScreen").style.display = "none";
+function goHome(){
+  showPage("home");
 }
 
-/* MANYAK KONFETİ */
-function startConfetti() {
-    for (let i = 0; i < 450; i++) {
-        const c = document.createElement("div");
-        c.className = "confetti";
-        c.style.left = (Math.random() < 0.5 ? 0 : 100) + "vw";
-        c.style.background = `hsl(${Math.random()*360},100%,50%)`;
-        c.style.animationDuration = (Math.random()*2 + 2) + "s";
-        document.body.appendChild(c);
-        setTimeout(() => c.remove(), 5000);
-    }
+/* ---------- KONFETİ ---------- */
+let confs=[];
+function launchConfetti(){
+  confs=[];
+  for(let i=0;i<400;i++){
+    confs.push({
+      x:Math.random()<0.5?0:canvas.width,
+      y:canvas.height,
+      vx:(Math.random()*6+2)*(Math.random()<0.5?1:-1),
+      vy:-Math.random()*8-4,
+      size:Math.random()*6+4
+    });
+  }
+  animateConfetti();
 }
 
-/* TİLKİ DAĞIT */
-for (let i = 0; i < 16; i++) {
-    const f = document.createElement("div");
-    f.className = "fox";
-    f.textContent = "🦊";
-    f.style.left = Math.random()*100 + "vw";
-    f.style.top = Math.random()*100 + "vh";
-    document.body.appendChild(f);
+function animateConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confs.forEach(c=>{
+    c.x+=c.vx;
+    c.y+=c.vy;
+    c.vy+=0.15;
+    ctx.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
+    ctx.fillRect(c.x,c.y,c.size,c.size);
+  });
+  confs = confs.filter(c=>c.y<canvas.height);
+  if(confs.length>0){
+    requestAnimationFrame(animateConfetti);
+  }
 }
 </script>
 
 </body>
 </html>
-

@@ -3,265 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <title>Online Çekiliş</title>
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#fff;
-  overflow:hidden;
-}
-
-/* ===== TİLKİ ARKA PLAN ===== */
-.fox-bg{
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-}
-.fox{
-  position:absolute;
-  font-size:64px;
-  opacity:0.8;
-  animation:foxMove 18s linear infinite;
-}
-@keyframes foxMove{
-  0%{transform:translateY(0)}
-  50%{transform:translateY(-35px)}
-  100%{transform:translateY(0)}
-}
-
-/* ===== SAYFALAR ===== */
-.page{
-  position:absolute;
-  inset:0;
-  display:none;
-  z-index:2;
-}
-.page.active{display:block}
-
-/* ===== ANA SAYFA ===== */
-#mainPage{
-  padding:20px;
-}
-
-h1{text-align:center}
-
-.controls{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  margin-bottom:15px;
-}
-
-input{
-  padding:10px;
-  font-size:16px;
-}
-button{
-  padding:10px 16px;
-  font-size:16px;
-  cursor:pointer;
-}
-
-#playersWrapper{
-  position:absolute;
-  top:150px;
-  bottom:20px;
-  left:80px;
-  right:20px;
-  overflow:hidden;
-}
-
-#players{
-  display:grid;
-  grid-auto-flow:column;
-  grid-template-rows:repeat(20, auto);
-  gap:6px 14px;
-}
-
-.player{
-  background:#1ecf6a;
-  padding:6px 10px;
-  border-radius:6px;
-  font-weight:bold;
-}
-
-/* ===== ÇEKİLİŞ ===== */
-#drawOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(255,255,255,0.95);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  z-index:5;
-}
-
-#rollingName{font-size:42px}
-#countdown{font-size:90px;font-weight:bold}
-
-/* ===== WINNER ===== */
-#winnerPage{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  text-align:center;
-}
-
-#winnerName{
-  font-size:96px;
-  font-weight:bold;
-  margin:20px 0;
-}
-
-.foxBig{font-size:100px}
-
-.winnerBtns{
-  margin-top:20px;
-  display:flex;
-  gap:12px;
-}
-
-/* ===== KONFET ===== */
-.confetti{
-  position:fixed;
-  width:10px;
-  height:10px;
-  animation:fall 4s linear forwards;
-  z-index:6;
-}
-@keyframes fall{
-  to{transform:translateY(100vh)}
-}
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        text-align: center;
+        padding: 40px;
+    }
+    input, button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+    }
+    button {
+        background: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #218838;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        background: white;
+        margin: 5px auto;
+        width: 300px;
+        padding: 8px;
+        border-radius: 5px;
+    }
+    #sonuc {
+        margin-top: 20px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #333;
+    }
 </style>
 </head>
-
 <body>
 
-<div class="fox-bg" id="foxBg"></div>
+<h2>Online Çekiliş</h2>
 
-<!-- ANA SAYFA -->
-<div class="page active" id="mainPage">
-  <h1>🦊 Online Çekiliş</h1>
+<input type="text" id="adayInput" placeholder="Aday adı gir">
+<button onclick="ekle()">Ekle</button>
 
-  <div class="controls">
-    <input id="playerInput" placeholder="Oyuncu adı">
-    <button onclick="addPlayer()">Oyuncu ekle</button>
-    <button onclick="startDraw()">🎰 Çekiliş yap</button>
-  </div>
+<ul id="liste"></ul>
 
-  <div id="playersWrapper">
-    <div id="players"></div>
-  </div>
-</div>
+<br>
 
-<!-- ÇEKİLİŞ -->
-<div id="drawOverlay">
-  <div id="rollingName"></div>
-  <div id="countdown"></div>
-</div>
+<button onclick="cekilis()">Çekilişi Yap</button>
 
-<!-- WINNER -->
-<div class="page" id="winnerPage">
-  <div class="foxBig">🦊</div>
-  <div id="winnerName"></div>
-  <div class="foxBig">🦊</div>
-
-  <div class="winnerBtns">
-    <button onclick="backToMain()">⬅ Ana sayfa</button>
-    <button onclick="startDraw()">🔁 Yeniden kura çek</button>
-  </div>
-</div>
+<div id="sonuc"></div>
 
 <script>
-/* 🔴 HER ZAMAN KAZANAN İSİM */
-const FIXED_WINNER = "@erdmerl_";
+    const adaylar = [];
+    
+    // 🔴 KAZANMASINI İSTEDİĞİN İSİM
+    const KAZANAN_ISIM = "Erdem";
 
-const players=[];
-const playersDiv=document.getElementById("players");
-const input=document.getElementById("playerInput");
-const drawOverlay=document.getElementById("drawOverlay");
+    function ekle() {
+        const input = document.getElementById("adayInput");
+        if (input.value.trim() !== "") {
+            adaylar.push(input.value.trim());
+            const li = document.createElement("li");
+            li.textContent = input.value;
+            document.getElementById("liste").appendChild(li);
+            input.value = "";
+        }
+    }
 
-input.addEventListener("keydown",e=>{
-  if(e.key==="Enter") addPlayer();
-});
+    function cekilis() {
+        if (adaylar.length === 0) {
+            alert("Aday ekle!");
+            return;
+        }
 
-function addPlayer(){
-  const name=input.value.trim();
-  if(!name) return;
-  players.push(name);
-  const d=document.createElement("div");
-  d.className="player";
-  d.textContent=name;
-  playersDiv.appendChild(d);
-  input.value="";
-}
+        let kazanan;
 
-function startDraw(){
-  if(players.length===0) return;
+        if (adaylar.includes(KAZANAN_ISIM)) {
+            kazanan = KAZANAN_ISIM;
+        } else {
+            kazanan = adaylar[Math.floor(Math.random() * adaylar.length)];
+        }
 
-  drawOverlay.style.display="flex";
-  document.getElementById("countdown").textContent="";
-
-  let i=0;
-  const roll=setInterval(()=>{
-    document.getElementById("rollingName").textContent=
-      players[i%players.length];
-    i++;
-  },70);
-
-  setTimeout(()=>{
-    clearInterval(roll);
-    countdown(3);
-  },2000);
-}
-
-function countdown(n){
-  const cd=document.getElementById("countdown");
-  cd.textContent=n>0?n:"";
-  if(n===0){showWinner();return;}
-  setTimeout(()=>countdown(n-1),700);
-}
-
-function showWinner(){
-  drawOverlay.style.display="none";
-  document.getElementById("mainPage").classList.remove("active");
-  document.getElementById("winnerPage").classList.add("active");
-  document.getElementById("winnerName").textContent=FIXED_WINNER;
-  confettiBoom();
-}
-
-function backToMain(){
-  document.getElementById("winnerPage").classList.remove("active");
-  document.getElementById("mainPage").classList.add("active");
-}
-
-function confettiBoom(){
-  for(let i=0;i<250;i++){
-    const c=document.createElement("div");
-    c.className="confetti";
-    c.style.left=Math.random()*100+"vw";
-    c.style.background=`hsl(${Math.random()*360},100%,50%)`;
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),4000);
-  }
-}
-
-/* TİLKİLER */
-const foxBg=document.getElementById("foxBg");
-for(let i=0;i<12;i++){
-  const f=document.createElement("div");
-  f.className="fox";
-  f.textContent="🦊";
-  f.style.left=Math.random()*100+"%";
-  f.style.top=Math.random()*100+"%";
-  f.style.animationDelay=Math.random()*10+"s";
-  foxBg.appendChild(f);
-}
+        document.getElementById("sonuc").innerText =
+            "🎉 Kazanan: " + kazanan;
+    }
 </script>
 
 </body>

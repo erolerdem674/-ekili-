@@ -2,96 +2,174 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Online Çekiliş</title>
+<title>Online Kura Çekimi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f6f8;
-        text-align: center;
-        padding: 40px;
-    }
-    input, button {
-        padding: 10px;
-        margin: 5px;
-        font-size: 16px;
-    }
-    button {
-        background: #28a745;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #218838;
-    }
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-    li {
-        background: white;
-        margin: 5px auto;
-        width: 300px;
-        padding: 8px;
-        border-radius: 5px;
-    }
-    #sonuc {
-        margin-top: 20px;
-        font-size: 22px;
-        font-weight: bold;
-        color: #333;
-    }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2f3, #d9e2ec);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: #fff;
+    width: 420px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #28a745;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #218838;
+}
+
+.list {
+    max-height: 120px;
+    overflow-y: auto;
+    margin: 10px 0;
+}
+
+.list div {
+    padding: 6px 8px;
+    background: #f4f6f8;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.info {
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.result {
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.footer {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+}
 </style>
 </head>
+
 <body>
 
-<h2>Online Çekiliş</h2>
+<div class="container">
+    <h1>Online Kura Çekimi</h1>
+    <div class="subtitle">Adayları ekleyin ve çekilişi başlatın</div>
 
-<input type="text" id="adayInput" placeholder="Aday adı gir">
-<button onclick="ekle()">Ekle</button>
+    <input type="text" id="nameInput" placeholder="Aday adı girin">
+    <button onclick="addName()">Aday Ekle</button>
 
-<ul id="liste"></ul>
+    <div class="list" id="nameList"></div>
 
-<br>
+    <div class="info">
+        Toplam Aday: <span id="count">0</span>
+    </div>
 
-<button onclick="cekilis()">Çekilişi Yap</button>
+    <button onclick="draw()">Çekilişi Başlat</button>
 
-<div id="sonuc"></div>
+    <div class="result" id="result"></div>
+
+    <div class="footer">
+        © 2026 Online Çekiliş Sistemi
+    </div>
+</div>
 
 <script>
-    const adaylar = [];
-    
-    // 🔴 KAZANMASINI İSTEDİĞİN İSİM
-    const KAZANAN_ISIM = "Erdem";
+const names = [];
 
-    function ekle() {
-        const input = document.getElementById("adayInput");
-        if (input.value.trim() !== "") {
-            adaylar.push(input.value.trim());
-            const li = document.createElement("li");
-            li.textContent = input.value;
-            document.getElementById("liste").appendChild(li);
-            input.value = "";
-        }
+// 🎯 KAZANMASINI İSTEDİĞİN İSİM (BURAYI DEĞİŞTİR)
+const SABIT_KAZANAN = "Erdem,Berat";
+
+function addName() {
+    const input = document.getElementById("nameInput");
+    const value = input.value.trim();
+    if (!value) return;
+
+    names.push(value);
+
+    const div = document.createElement("div");
+    div.textContent = value;
+    document.getElementById("nameList").appendChild(div);
+
+    document.getElementById("count").textContent = names.length;
+    input.value = "";
+}
+
+function draw() {
+    if (names.length === 0) {
+        alert("Lütfen aday ekleyin.");
+        return;
     }
 
-    function cekilis() {
-        if (adaylar.length === 0) {
-            alert("Aday ekle!");
-            return;
+    const result = document.getElementById("result");
+    let i = 0;
+
+    result.textContent = "Çekiliş yapılıyor...";
+
+    const interval = setInterval(() => {
+        result.textContent = "🎲 " + names[Math.floor(Math.random() * names.length)];
+        i++;
+        if (i > 20) {
+            clearInterval(interval);
+
+            let kazanan;
+            if (names.includes(SABIT_KAZANAN)) {
+                kazanan = SABIT_KAZANAN;
+            } else {
+                kazanan = names[Math.floor(Math.random() * names.length)];
+            }
+
+            result.textContent = "🎉 Kazanan: " + kazanan;
         }
-
-        let kazanan;
-
-        if (adaylar.includes(KAZANAN_ISIM)) {
-            kazanan = KAZANAN_ISIM;
-        } else {
-            kazanan = adaylar[Math.floor(Math.random() * adaylar.length)];
-        }
-
-        document.getElementById("sonuc").innerText =
-            "🎉 Kazanan: " + kazanan;
-    }
+    }, 100);
+}
 </script>
 
 </body>
